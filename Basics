@@ -1,0 +1,36 @@
+# CHALLENGE #1: Creating a Data Frame from three variables
+name <- c("Patient1", "Patient2", "Patient3")
+age <- c(18, 21, 23)
+covidResult <- c("Negative", "Positive", "Negative")
+
+# Combine the new vectors into a df names healthScreening
+healthScreening <- data.frame(name, age, covidResult)
+
+# Determine the data types for name, age, covidResult
+summary(object = healthScreening)
+
+# Update covidResult as factor type
+healthScreening$covidResult <- as.factor(x = healthScreening$covidResult)
+class(x = healthScreening$covidResult)
+
+# Summarize the df
+summary(object = healthScreening)
+
+
+# CHALLENGE #2: Identifying Missing Data, calculate mean of immunization variable ignoring blanks,
+# produce the number of obs in WHO data set, omit the NAs and save as new obj. Produce number of 
+# obs in new data set after NAs removed and list in comments how many were removed overall.
+
+# Read the WHO data
+whoDATA <- read.csv("WHO.csv", stringsAsFactors = TRUE, na.strings = "NA")
+
+# Display the dimensions
+dim(whoDATA)
+
+# Identify which obs in 'Life' col are NA
+which(is.na(whoDATA$Life))
+
+# Calculate mean of immunization variable w/o blanks
+mean(whoDATA$immunization, na.rm = TRUE)
+
+
