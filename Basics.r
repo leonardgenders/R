@@ -50,7 +50,7 @@ nrow(who_small)
 length(which(who_small$immunization > 90)
 
 # Calculate the length after filtering by AdRestrictionsTVBeer banned
-length(which(who_small$AdRestrictionsTVBeer == 'ban))
+length(which(who_small$AdRestrictionsTVBeer == 'ban'))
 
 # Sort the data from high to low using GDP as the sorted variable
 # Save the answer in an object called sortGDP
