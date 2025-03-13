@@ -1,0 +1,230 @@
+---
+title: "M2 Individual Coding Assignment"
+author: "Leonard Genders"
+date: "`r Sys.Date()`"
+output: word_document
+---
+
+### Part A.
+
+**Use the lm() function to perform a simple linear regression with Sales as the response and Price as the predictor. Use the summary() function to print the results. Comment on the output in terms of Is there a relationship between Sales and Price? If so, is the relationship positive or negative, how strong is the relationship?**
+
+```{r}
+# Read in the data
+Carseats <- read.csv('Carseats.csv', stringsAsFactors = T)
+
+# View
+View(Carseats)
+
+# Simple linear regressions with Sales as response and Price as predictor
+lm.fit <- lm(Sales ~ Price, data = Carseats)
+
+# Use the summary() function to print the results.
+summary(lm.fit)
+
+cor(Carseats$Sales, Carseats$Price)
+```
+
+**Is there a relationship between Sales and Price?:**
+Yes, there is a relationship between Sales and Price such that as Price increases, we expect Sales to decrease so there is a negative relationship. Further for each dollar that Price increases, we can expect sales to decrease by -0.053073. 
+
+**How strong is the relationship?:**
+I used the cor() function between Sales and Price, we can see that the value is -0.4449507 which is nearly in the middle between 0 and -1. I would assess the strength of this negative relationship to be fairly strong.
+
+### Part B.
+
+**Use the lm() function to perform a multi-linear regression with Sales as the response and CompPrice, Income, Advertising, Population, Price, Age, and Education as potential predictors. You may want to try different combinations of the variables to check the significance of the model and significance of the predictor variables. Are all these predictors significant? If not, which of them are significant? Why?**
+
+```{r}
+# Multi-linear regression with Sales as the response and CompPrice, Income,
+# Advertising, Population, Price, Age, and Education as potential predictors
+lm.fit2 <- lm(Sales ~ CompPrice + Income + Advertising + Population + Price +
+               Age + Education, data = Carseats) # all vars
+
+# Print results
+summary(lm.fit2) # Population (p = 0.857092) and Education (p =0.282142) not significant
+
+
+# Using the Backward Selection approach for determining significant variables
+lm.fit3 <- lm(Sales ~ CompPrice + Income + Advertising + Price +
+               Age + Education, data = Carseats) # dropped Population
+
+# Print results
+summary(lm.fit3) # Education (p = 0.287278) not significant, drop
+
+
+# Dropped Education and Population
+lm.fit4 <- lm(Sales ~ CompPrice + Income + Advertising + Price +
+               Age, data = Carseats)
+
+# Print results
+summary(lm.fit4) # All remaining vars are significant at p<.001 level
+
+
+# Dropped Education and Population, interaction btw CompPrice:Income and 
+# Advertising:Price
+lm.fit5_int1 <- lm(Sales ~ CompPrice:Income + Advertising:Price +
+               Age, data = Carseats)
+
+# View interaction results
+summary(lm.fit5_int1)
+
+
+# Kept Education and Population, interaction between least and most significant
+lm.fit5_int2 <- lm(Sales ~ CompPrice:Population + Advertising:Education, data = Carseats)
+
+# View interaction results
+summary(lm.fit5_int2) # Interaction between CompPrice and Population is not significant.
+```
+
+**Are all these predictors significant? If not, which of them are significant? Why?:**
+No, not all the predictors are significant. The significant predictors are CompPrice,
+Income, Advertising, Price, and Age all at the p<.001 level. The two insignificant 
+predictors are Education (p = .282142) and Population (p = .857092). I used the Backward
+Selection method to help determine significant variables and started by removing 
+Population and then Education from the model. Additionally, I conducted two regressions
+with interactions and discovered that the interaction between CompPrice and Income 
+is statistically significant (p = .003091), and the interaction between Advertising 
+and Price is statistically significant (p = .000423). The last regression with
+interactions revealed that the interaction between Advertising (one of the most 
+significant predictors) and Education (one of the least significant predictors)
+suggests this interaction is significant at the p<.001 level.
+
+### Part C. 
+**Use the lm() function to perform a multi-linear regression with Sales as the response and Price, Urban, and US as predictor variables. Note that dummy variables are needed for the categorical variables Urban, and US. Are all these three significant, Why?**
+```{r}
+# Multi-linear regression with Sales as the response and Price, Urban, and US
+# as predictor variables
+lm.fit_dv1 <- lm(Sales ~ Price + Urban + US, data = Carseats) # all vars
+
+# View results
+summary(lm.fit_dv1)
+
+# View the dummy variable coding for categorical variables
+Urban_dvs <- contrasts(Carseats$Urban)
+Urban_dvs
+# No - 0, Yes - 1
+
+US_dvs <- contrasts(Carseats$US)
+US_dvs
+# No - 0, Yes - 1
+```
+**Are all these three significant, Why?:** No, all the variables are not significant.
+The significant variables are price (p<.001) and USYes(dummy coded to 1, p<.001). 
+UrbanYes(dummy coded to 1) is not significant (p=.936). UrbanNo(dummy coded to 0) 
+and USNo(dummy coded to 0) are not shown in the results.
+
+### Part D.
+**Use the lm() function to perform a multi-linear regression with Sales as the response and CompPrice, Income, Advertising, Population, Price, Age, and Education as potential quantitative predictors and Urban, and US as categorical variables. Note that dummy variables are needed for the categorical variables. You may want to try different combinations of the variables to check the significance of the model and significance of the predictor variables. Are all these predictors significant? If not, which of them are significant? Why?**
+```{r}
+# Multi-linear regression with Sales as the response and and CompPrice, Income, 
+# Advertising, Population, Price, Age, and Education as potential quantitative 
+# predictors and Urban, and US as categorical variables.
+lm.fit_dv2 <- lm(Sales ~ CompPrice + Income + Advertising + Population + Price + 
+                   Urban + US, data = Carseats) # all vars
+
+# View results
+summary(lm.fit_dv2)
+
+# Forward Selection - start with the null model, track lowest RSS
+lm.fit_null <- lm(Sales ~ 0, data = Carseats) # not sure if correct null model
+
+# View results
+summary(lm.fit_null)
+
+# Trying RSS check using residuals()
+sum(residuals(lm.fit_null)^2) # 25660.23
+
+
+# Add CompPrice first
+lm.fit_fwd_1 <- lm(Sales ~ CompPrice, data = Carseats)
+
+# View results
+summary(lm.fit_fwd_1)
+
+# RSS check
+sum(residuals(lm.fit_fwd_1)^2) # 3169.208
+
+
+# Add Income
+lm.fit_fwd_2 <- lm(Sales ~ CompPrice + Income, data = Carseats)
+
+# View results
+summary(lm.fit_fwd_2)
+
+# RSS check
+sum(residuals(lm.fit_fwd_2)^2) # 3090.135
+
+
+# Add Advertising
+lm.fit_fwd_3 <- lm(Sales ~ CompPrice + Income + Advertising, data = Carseats)
+
+# View results
+summary(lm.fit_fwd_3)
+
+# RSS check
+sum(residuals(lm.fit_fwd_3)^2) # 2870.783
+
+
+# Not adding Population (not significant), adding Price
+lm.fit_fwd_4 <- lm(Sales ~ CompPrice + Income + Advertising + Price,
+                   data = Carseats)
+
+# View results
+summary(lm.fit_fwd_4)
+
+# RSS check
+sum(residuals(lm.fit_fwd_4)^2) # 1671.898
+
+
+# Adding Age
+lm.fit_fwd_5 <- lm(Sales ~ CompPrice + Income + Advertising + Price + Age,
+                   data = Carseats)
+
+# View results
+summary(lm.fit_fwd_5)
+
+# RSS check
+sum(residuals(lm.fit_fwd_5)^2) # 1462.897
+
+
+# Adding Urban (expecting worsened RSS)
+lm.fit_fwd_6 <- lm(Sales ~ CompPrice + Income + Advertising + Price + Age + Urban,
+                   data = Carseats)
+
+# View results
+summary(lm.fit_fwd_6)
+
+# RSS check
+sum(residuals(lm.fit_fwd_6)^2) # 1461.137, marginal improvement
+
+
+# Adding US
+lm.fit_fwd_7 <- lm(Sales ~ CompPrice + Income + Advertising + Price + Age + Urban
+                   + US, data = Carseats)
+
+# View results
+summary(lm.fit_fwd_7)
+
+# RSS check
+sum(residuals(lm.fit_fwd_7)^2) # 1460.904, marginal improvement, stopping
+
+```
+**Are all these predictors significant? If not, which of them are significant? 
+Why?:** From the first regression results, we learn that the following predictors
+are significant at the p<.001 level: CompPrice, Income, Advertising, and Price. 
+The least significant variables are Population, USYes, and UrbanYes, respectively.
+UrbanNo and USNo are not shown in the regression results.
+
+I wanted to try Forward Selection in this part to determine what variables are 
+significant, since I used Backward Selection in the previous section. I then 
+created what I believe is the null model and added what I knew to be the most 
+significant variables from the base case of where the prompt asks for all the 
+variables listed.
+
+I noticed that after adding UrbanYes and USYes that the RSS value marginally decreased.
+I expect this is because adding more variables can continue to reduce this value. 
+At the end of the last iteration of regressions (lm.fit_fwd_7), there are five
+significant variables at the p<.001 level which are CompPrice, Income, Advertising,
+Price, and Age. The insignificant variables are UrbanYes and USYes and the final
+RSS value was 1460.904 from the initial value of the null model of 25660.23.
